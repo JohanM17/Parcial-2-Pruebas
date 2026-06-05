@@ -17,6 +17,20 @@ UMBRAL_MEDIA = 10_000
 UMBRAL_ALTA = 30_000
 
 
+def _bonificacion_base(monto: int | float) -> int:
+    """Retorna el porcentaje de bonificación según el monto (sin premium)."""
+    if monto >= UMBRAL_ALTA:
+        return BONIFICACION_ALTA
+    if monto >= UMBRAL_MEDIA:
+        return BONIFICACION_MEDIA
+    return 0
+
+
+def _es_monto_valido(monto: int | float) -> bool:
+    """Verifica si el monto está dentro del rango permitido."""
+    return MONTO_MINIMO <= monto <= MONTO_MAXIMO
+
+
 def calcular_recarga(monto: int | float, premium: bool = False) -> dict:
     """
     Calcula el resultado de una recarga celular.
@@ -28,7 +42,7 @@ def calcular_recarga(monto: int | float, premium: bool = False) -> dict:
     Returns:
         dict con claves: valido, mensaje, monto, bonificacion_porcentaje
     """
-    if monto < MONTO_MINIMO or monto > MONTO_MAXIMO:
+    if not _es_monto_valido(monto):
         return {
             "valido": False,
             "mensaje": "Monto rechazado: debe estar entre $1.000 y $50.000",
@@ -36,13 +50,7 @@ def calcular_recarga(monto: int | float, premium: bool = False) -> dict:
             "bonificacion_porcentaje": 0,
         }
 
-    if monto >= UMBRAL_ALTA:
-        bonificacion = BONIFICACION_ALTA
-    elif monto >= UMBRAL_MEDIA:
-        bonificacion = BONIFICACION_MEDIA
-    else:
-        bonificacion = 0
-
+    bonificacion = _bonificacion_base(monto)
     if premium:
         bonificacion += BONUS_PREMIUM
 
